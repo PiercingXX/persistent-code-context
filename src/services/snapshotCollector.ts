@@ -38,6 +38,13 @@ export interface ContextSnapshot {
     language: string;
     lines: number;
   }>;
+  deploymentContext: {
+    location?: string;
+    accessMethod?: string;
+    deploymentMethod?: string;
+    isProduction?: boolean;
+    currentWorkMode?: string;
+  };
 }
 
 export class ContextSnapshotCollector {
@@ -55,6 +62,7 @@ export class ContextSnapshotCollector {
       projectStructure: this.collectProjectStructure(),
       git: this.collectGitInfo(),
       openEditors: this.collectOpenEditors(),
+      deploymentContext: {},
     };
   }
 

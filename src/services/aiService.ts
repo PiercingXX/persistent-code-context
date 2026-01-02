@@ -165,6 +165,13 @@ Key Files: ${snapshot.projectStructure.keyFiles.map(escapeField).join(', ')}
 ## Open Editors
 ${snapshot.openEditors.map((e) => `- ${escapeField(e.path)} (${escapeField(e.language)}, ${e.lines} lines)`).join('\n')}
 
+## Deployment Context (if mentioned)
+${snapshot.deploymentContext.location ? `- Location: ${escapeField(snapshot.deploymentContext.location)}` : ''}
+${snapshot.deploymentContext.accessMethod ? `- Access: ${escapeField(snapshot.deploymentContext.accessMethod)}` : ''}
+${snapshot.deploymentContext.deploymentMethod ? `- Method: ${escapeField(snapshot.deploymentContext.deploymentMethod)}` : ''}
+${snapshot.deploymentContext.currentWorkMode ? `- Work Mode: ${escapeField(snapshot.deploymentContext.currentWorkMode)}` : ''}
+${snapshot.deploymentContext.isProduction !== undefined ? `- Environment: ${snapshot.deploymentContext.isProduction ? 'Production' : 'Development'}` : ''}
+
 ## Required Extensions
 ${snapshot.vscodeContext.requiredExtensions.map(escapeField).join(', ') || 'None'}
 
@@ -175,7 +182,8 @@ Provide a comprehensive summary covering:
 3. What is the project structure and architecture?
 4. What is currently being worked on?
 5. What changed recently?
-6. Any important context for continuing development?
+6. What is the deployment environment (if any)?
+7. Any important context for continuing development?
 
 Keep the summary concise but complete.`;
   }
@@ -301,6 +309,13 @@ Key Files: ${snapshot.projectStructure.keyFiles.map(escapeField).join(', ')}
 ## Open Editors
 ${snapshot.openEditors.map((e) => `- ${escapeField(e.path)} (${escapeField(e.language)}, ${e.lines} lines)`).join('\n')}
 
+## Deployment Context (if mentioned)
+${snapshot.deploymentContext.location ? `- Location: ${escapeField(snapshot.deploymentContext.location)}` : ''}
+${snapshot.deploymentContext.accessMethod ? `- Access: ${escapeField(snapshot.deploymentContext.accessMethod)}` : ''}
+${snapshot.deploymentContext.deploymentMethod ? `- Method: ${escapeField(snapshot.deploymentContext.deploymentMethod)}` : ''}
+${snapshot.deploymentContext.currentWorkMode ? `- Work Mode: ${escapeField(snapshot.deploymentContext.currentWorkMode)}` : ''}
+${snapshot.deploymentContext.isProduction !== undefined ? `- Environment: ${snapshot.deploymentContext.isProduction ? 'Production' : 'Development'}` : ''}
+
 ## Required Extensions
 ${snapshot.vscodeContext.requiredExtensions.map(escapeField).join(', ') || 'None'}
 
@@ -311,7 +326,8 @@ Provide a comprehensive summary covering:
 3. What is the project structure and architecture?
 4. What is currently being worked on?
 5. What changed recently?
-6. Any important context for continuing development?
+6. What is the deployment environment (if any)?
+7. Any important context for continuing development?
 
 Keep the summary concise but complete.`;
   }
@@ -406,6 +422,13 @@ Key Files: ${snapshot.projectStructure.keyFiles.map(escapeField).join(', ')}
 ## Open Editors
 ${snapshot.openEditors.map((e) => `- ${escapeField(e.path)} (${escapeField(e.language)}, ${e.lines} lines)`).join('\n')}
 
+## Deployment Context (if mentioned)
+${snapshot.deploymentContext.location ? `- Location: ${escapeField(snapshot.deploymentContext.location)}` : ''}
+${snapshot.deploymentContext.accessMethod ? `- Access: ${escapeField(snapshot.deploymentContext.accessMethod)}` : ''}
+${snapshot.deploymentContext.deploymentMethod ? `- Method: ${escapeField(snapshot.deploymentContext.deploymentMethod)}` : ''}
+${snapshot.deploymentContext.currentWorkMode ? `- Work Mode: ${escapeField(snapshot.deploymentContext.currentWorkMode)}` : ''}
+${snapshot.deploymentContext.isProduction !== undefined ? `- Environment: ${snapshot.deploymentContext.isProduction ? 'Production' : 'Development'}` : ''}
+
 ## Required Extensions
 ${snapshot.vscodeContext.requiredExtensions.map(escapeField).join(', ') || 'None'}
 
@@ -416,7 +439,8 @@ Provide a comprehensive summary covering:
 3. What is the project structure and architecture?
 4. What is currently being worked on?
 5. What changed recently?
-6. Any important context for continuing development?
+6. What is the deployment environment (if any)?
+7. Any important context for continuing development?
 
 Keep the summary concise but complete.`;
   }

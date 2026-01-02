@@ -27,6 +27,13 @@ export class ContextManager {
   private prevOpenFiles: string = '';
   private prevGitChanges: string = '';
   private recentChatContext: string[] = [];
+  private deploymentContext: {
+    location?: string;
+    accessMethod?: string;
+    deploymentMethod?: string;
+    isProduction?: boolean;
+    currentWorkMode?: string;
+  } = {};
 
   constructor(workspaceRoot: string) {
     this.workspaceRoot = workspaceRoot;
@@ -169,6 +176,9 @@ export class ContextManager {
       this.recentChatContext.shift();
     }
 
+    // Extract deployment/work context from chat
+    this.updateDeploymentContextFromChat(context);
+
     // Append to changes log
     if (this.enableChangeLogging) {
       this.fileService.appendFile('changes.md', `\n${context}\n`);
@@ -180,9 +190,74 @@ export class ContextManager {
     );
   }
 
+  private updateDeploymentContextFromChat(text: string) {
+    const lowerText = text.toLowerCase();
+
+    // Extract deployment location
+    const locationPatterns = [
+      /(?:deployed to|hosting on|running on|server at)\s+([^\s,\.]+)/i,
+      /(?:location|server|host):\s*([^\s,\.]+)/i,
+    ];
+    for (const pattern of locationPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        this.deploymentContext.location = match[1];
+        break;
+      }
+    }
+
+    // Extract access method
+    if (lowerText.includes('ssh') || lowerText.includes('secure shell')) {
+      this.deploymentContext.accessMethod = 'SSH';
+    } else if (lowerText.includes('docker')) {
+      this.deploymentContext.accessMethod = 'Docker';
+    } else if (lowerText.includes('kubernetes') || lowerText.includes('k8s')) {
+      this.deploymentContext.accessMethod = 'Kubernetes';
+    } else if (lowerText.includes('http') || lowerText.includes('web')) {
+      this.deploymentContext.accessMethod = 'HTTP';
+    } else if (lowerText.includes('local')) {
+      this.deploymentContext.accessMethod = 'Local';
+    }
+
+    // Extract deployment method
+    if (lowerText.includes('git pull') || lowerText.includes('pull and deploy')) {
+      this.deploymentContext.deploymentMethod = 'Git pull';
+    } else if (lowerText.includes('ci/cd') || lowerText.includes('pipeline')) {
+      this.deploymentContext.deploymentMethod = 'CI/CD Pipeline';
+    } else if (lowerText.includes('docker rebuild') || lowerText.includes('docker build')) {
+      this.deploymentContext.deploymentMethod = 'Docker rebuild';
+    } else if (lowerText.includes('direct edit') || lowerText.includes('file edit')) {
+      this.deploymentContext.deploymentMethod = 'Direct file edit';
+    }
+
+    // Detect production status
+    if (lowerText.includes('production') || lowerText.includes('prod environment')) {
+      this.deploymentContext.isProduction = true;
+    } else if (lowerText.includes('development') || lowerText.includes('dev environment') || lowerText.includes('staging')) {
+      this.deploymentContext.isProduction = false;
+    }
+
+    // Extract work mode
+    if (lowerText.includes('bug fix') || lowerText.includes('fixing bug')) {
+      this.deploymentContext.currentWorkMode = 'Bug Fixes';
+    } else if (lowerText.includes('new feature') || lowerText.includes('feature development')) {
+      this.deploymentContext.currentWorkMode = 'Feature Development';
+    } else if (lowerText.includes('maintenance') || lowerText.includes('maintaining')) {
+      this.deploymentContext.currentWorkMode = 'Maintenance';
+    } else if (lowerText.includes('testing') || lowerText.includes('writing tests')) {
+      this.deploymentContext.currentWorkMode = 'Testing';
+    } else if (lowerText.includes('refactor')) {
+      this.deploymentContext.currentWorkMode = 'Refactoring';
+    }
+  }
+
   private async saveActiveContext() {
     try {
       const snapshot = await this.snapshotCollector.collect();
+      
+      // Merge tracked deployment context into snapshot
+      snapshot.deploymentContext = { ...this.deploymentContext };
+      
       const aiSummary = await this.aiService.summarize(snapshot);
 
       const sessionName = this.currentSession?.name || 'No active session';
@@ -205,6 +280,14 @@ ${aiSummary || this.buildFallbackSummary(snapshot)}
 
 ## Recent Chat Instructions
 ${this.recentChatContext.length > 0 ? this.recentChatContext.slice(-3).join('\n') : '_No recent chat activity_'}
+
+## Deployment Context
+${snapshot.deploymentContext.location ? `- Location: ${snapshot.deploymentContext.location}` : ''}
+${snapshot.deploymentContext.accessMethod ? `- Access Method: ${snapshot.deploymentContext.accessMethod}` : ''}
+${snapshot.deploymentContext.deploymentMethod ? `- Deployment Method: ${snapshot.deploymentContext.deploymentMethod}` : ''}
+${snapshot.deploymentContext.currentWorkMode ? `- Current Mode: ${snapshot.deploymentContext.currentWorkMode}` : ''}
+${snapshot.deploymentContext.isProduction !== undefined ? `- Environment: ${snapshot.deploymentContext.isProduction ? 'Production' : 'Development'}` : ''}
+${Object.keys(snapshot.deploymentContext).length === 0 ? '_No deployment info captured yet (mention these in chat to auto-capture)_' : ''}
 
 ## Recent Changes
 ${snapshot.git.modifiedFiles.length > 0 ? snapshot.git.modifiedFiles.map((f) => `- ${f}`).join('\n') : 'No changes'}

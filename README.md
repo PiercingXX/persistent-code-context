@@ -178,7 +178,7 @@ Releases are automated via GitHub Actions.
 
 ## 📄 License
 
-MIT © PiercingXX  
+Apache © PiercingXX  
 See the [LICENSE](LICENSE) file for details.
 
 ---
