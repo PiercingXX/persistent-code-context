@@ -109,8 +109,78 @@ class GitHubCopilotProvider implements AIProvider {
   name = 'GitHub Copilot';
 
   async summarize(snapshot: ContextSnapshot): Promise<string> {
-    // TODO: Implement once vscode.lm API is available
-    throw new Error('GitHub Copilot provider not yet implemented');
+    const vscodeLM = (vscode as any).lm;
+    if (!vscodeLM) {
+      throw new Error('VS Code Language Models API not available. Ensure you have GitHub Copilot extension installed and are signed in.');
+    }
+
+    const prompt = this.buildPrompt(snapshot);
+
+    try {
+      // Use gpt-4o or gpt-3.5-turbo depending on availability
+      const models = await vscodeLM.selectChatModels();
+      if (!models || models.length === 0) {
+        throw new Error('No chat models available. Ensure GitHub Copilot is installed and you are signed in.');
+      }
+
+      const model = models[0]; // Use the first available model
+      const messages = [new (vscode as any).LanguageModelChatMessage((vscode as any).LanguageModelChatMessageRole.User, prompt)];
+
+      const chatResponse = await model.sendRequest(messages, {});
+      
+      let fullResponse = '';
+      for await (const fragment of chatResponse.text) {
+        fullResponse += fragment;
+      }
+
+      return fullResponse.trim() || 'Summary generated but empty response received.';
+    } catch (error) {
+      throw new Error(`GitHub Copilot summarization failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private buildPrompt(snapshot: ContextSnapshot): string {
+    return `You are a technical AI assistant. Analyze this workspace snapshot and provide a concise summary that will help you or another AI quickly understand the project context.
+
+## Workspace Metadata
+- Name: ${snapshot.workspaceMetadata.name}
+- Language: ${snapshot.workspaceMetadata.mainLanguage}
+- Node Version: ${snapshot.workspaceMetadata.nodeVersion || 'N/A'}
+
+## Project Structure
+Directories: ${snapshot.projectStructure.directories.join(', ')}
+Key Files: ${snapshot.projectStructure.keyFiles.join(', ')}
+
+## Git Status
+- Branch: ${snapshot.git.branch}
+- Recent Commits: ${snapshot.git.recentCommits.map((c) => c.message).join('\n  - ')}
+- Modified Files: ${snapshot.git.modifiedFiles.join(', ') || 'None'}
+- Staged Files: ${snapshot.git.stagedFiles.join(', ') || 'None'}
+
+## Open Editors
+${snapshot.openEditors.map((e) => `- ${e.path} (${e.language}, ${e.lines} lines)`).join('\n')}
+
+## Deployment Context
+- Location: ${snapshot.deploymentContext.location || 'Not specified'}
+- Access Method: ${snapshot.deploymentContext.accessMethod || 'Not specified'}
+- Deployment Method: ${snapshot.deploymentContext.deploymentMethod || 'Not specified'}
+- Current Mode: ${snapshot.deploymentContext.currentMode || 'Not specified'}
+- Production: ${snapshot.deploymentContext.isProduction ? 'Yes' : 'No'}
+
+## Required Extensions
+${snapshot.vscodeContext.requiredExtensions.join(', ') || 'None'}
+
+## Task
+Provide a comprehensive summary covering:
+1. What is this project building?
+2. What is the tech stack?
+3. What is the project structure and architecture?
+4. What is currently being worked on?
+5. What changed recently?
+6. What is the deployment environment?
+7. Any important context for continuing development?
+
+Keep the summary concise but complete.`;
   }
 }
 
