@@ -4,6 +4,7 @@
 src/**
 src/test/**
 out/test/**
+scripts/**
 .gitignore
 .yarnrc
 vsc-extension-quickstart.md
