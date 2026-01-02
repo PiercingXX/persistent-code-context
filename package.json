@@ -1,0 +1,104 @@
+{
+  "name": "persistent-context",
+  "displayName": "Persistent Code Context",
+  "description": "VSCode extension that maintains persistent project code context across sessions using local markdown files",
+  "version": "0.0.1",
+  "author": "PiercingXX",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PiercingXX/persistent-code-context"
+  },
+  "bugs": {
+    "url": "https://github.com/PiercingXX/persistent-code-context/issues"
+  },
+  "homepage": "https://github.com/PiercingXX/persistent-code-context#readme",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "persistent-context.startSession",
+        "title": "Start Session"
+      },
+      {
+        "command": "persistent-context.endSession",
+        "title": "End Session"
+      },
+      {
+        "command": "persistent-context.copyContext",
+        "title": "Copy Context"
+      },
+      {
+        "command": "persistent-context.viewContext",
+        "title": "View Context"
+      },
+      {
+        "command": "persistent-context.viewSession",
+        "title": "View Session"
+      },
+      {
+        "command": "persistent-context.viewHistory",
+        "title": "View History"
+      },
+      {
+        "command": "persistent-context.viewDecisions",
+        "title": "View Decisions"
+      },
+      {
+        "command": "persistent-context.addNote",
+        "title": "Add Note"
+      },
+      {
+        "command": "persistent-context.settings",
+        "title": "Persistent Context: Settings"
+      }
+    ],
+    "configuration": {
+      "title": "Persistent Context",
+      "properties": {
+        "persistentContext.autosaveInterval": {
+          "type": "number",
+          "default": 60,
+          "description": "Autosave interval in seconds for active context updates."
+        },
+        "persistentContext.enableChangeLogging": {
+          "type": "boolean",
+          "default": true,
+          "description": "Append a short changes entry to changes.md when open files or git status change."
+        },
+        "persistentContext.enableAutosave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic periodic saving of activeContext.md."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "mocha -r ts-node/register 'src/test/**/*.test.ts' --timeout 10000"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^16.0.0",
+    "@types/vscode": "^1.70.0",
+    "@vscode/vsce": "^3.7.1",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.7.0"
+  }
+}
