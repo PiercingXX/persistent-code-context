@@ -219,6 +219,28 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  const teachAgent = vscode.commands.registerCommand(
+    'persistent-context.teachAgent',
+    async () => {
+      const briefing = contextManager.generateAgentBriefing();
+      
+      // Copy to clipboard
+      await vscode.env.clipboard.writeText(briefing);
+      
+      // Show in new document
+      const doc = await vscode.workspace.openTextDocument({
+        content: briefing,
+        language: 'markdown',
+      });
+      
+      await vscode.window.showTextDocument(doc);
+      
+      vscode.window.showInformationMessage(
+        '✓ Project context copied to clipboard and opened. Paste into your AI chat to bring them up to speed!'
+      );
+    }
+  );
+
   context.subscriptions.push(
     startSession,
     endSession,
@@ -228,7 +250,8 @@ export function activate(context: vscode.ExtensionContext) {
     viewSession,
     viewHistory,
     viewDecisions,
-    settingsCmd
+    settingsCmd,
+    teachAgent
   );
 }
 

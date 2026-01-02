@@ -479,4 +479,36 @@ ${recentCommits || 'No commits yet'}
   isSessionActive(): boolean {
     return !!this.currentSession;
   }
+
+  /**
+   * Generate a comprehensive context summary for sharing with a new AI agent.
+   * Returns formatted markdown ready to paste into a chat.
+   */
+  generateAgentBriefing(): string {
+    const activeContext = this.fileService.readFile('activeContext.md');
+    const progressHistory = this.fileService.readFile('progress.md');
+    const decisions = this.fileService.readFile('decisions.md');
+
+    let briefing = `# Project Context Briefing
+
+This is the persistent context for the project. Use this to understand what we're building, recent work, and current state.
+
+---
+
+`;
+
+    if (activeContext) {
+      briefing += `${activeContext}\n\n---\n\n`;
+    }
+
+    if (progressHistory) {
+      briefing += `# Session History\n\n${progressHistory}\n\n---\n\n`;
+    }
+
+    if (decisions) {
+      briefing += `# Key Decisions\n\n${decisions}\n\n`;
+    }
+
+    return briefing;
+  }
 }

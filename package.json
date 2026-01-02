@@ -60,6 +60,10 @@
         "title": "Add Note"
       },
       {
+        "command": "persistent-context.teachAgent",
+        "title": "Teach AI Agent / Share Project Knowledge"
+      },
+      {
         "command": "persistent-context.settings",
         "title": "Persistent Context: Settings"
       }
