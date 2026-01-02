@@ -14,13 +14,27 @@ src/
 ├── ui/
 # Persistent Code Context
 
-VS Code extension that maintains persistent project code context across sessions using local markdown files.
+**Never lose track of what you were working on again.**
 
-## Overview
+## What is it?
 
-Persistent Code Context helps developers keep important project code context accessible across VS Code sessions. It stores short notes, decisions, and session progress in markdown files within the workspace so context survives restarts and machine reboots.
+Ever closed VS Code and forgot what you were doing? Returned to a project after a week and couldn't remember where you left off? Spent 20 minutes trying to recall that important decision you made yesterday?
 
-**Storage:** Local `.vscode-context/` folder in your workspace — readable/editable by you.
+Persistent Code Context solves this by automatically maintaining a running log of your work sessions, decisions, and notes - all stored as simple markdown files in your project.
+
+## Why use it?
+
+- **Remember your work:** Automatically tracks what you're working on, what files are open, recent commits
+- **Resume seamlessly:** Get prompted to continue your last session when you reopen VS Code
+- **Track decisions:** Keep a log of why you made certain architectural or implementation choices
+- **Merge sessions:** Combine multiple work sessions into a cohesive history
+- **Stay organized:** Everything is saved in plain markdown files you can read, edit, and version control
+
+Think of it as a work journal that writes itself.
+
+## How it works
+
+All context is stored in a `.vscode-context/` folder in your workspace as plain markdown files - no databases, no cloud, no lock-in. You own your data.
 
 ## Features
 
