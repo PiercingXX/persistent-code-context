@@ -38,13 +38,6 @@ export interface ContextSnapshot {
     language: string;
     lines: number;
   }>;
-  deploymentContext: {
-    location?: string;
-    accessMethod?: string;
-    deploymentMethod?: string;
-    isProduction?: boolean;
-    currentMode?: string;
-  };
 }
 
 export class ContextSnapshotCollector {
@@ -62,7 +55,6 @@ export class ContextSnapshotCollector {
       projectStructure: this.collectProjectStructure(),
       git: this.collectGitInfo(),
       openEditors: this.collectOpenEditors(),
-      deploymentContext: this.collectDeploymentContext(),
     };
   }
 
@@ -183,17 +175,5 @@ export class ContextSnapshotCollector {
       language: editor.document.languageId,
       lines: editor.document.lineCount,
     }));
-  }
-
-  private collectDeploymentContext() {
-    // User can set these via settings or workspace configuration
-    const cfg = vscode.workspace.getConfiguration('persistentContext');
-    return {
-      location: cfg.get<string>('deploymentLocation'),
-      accessMethod: cfg.get<string>('deploymentAccessMethod'),
-      deploymentMethod: cfg.get<string>('deploymentMethod'),
-      isProduction: cfg.get<boolean>('isProduction'),
-      currentMode: cfg.get<string>('currentWorkMode'),
-    };
   }
 }

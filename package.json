@@ -113,27 +113,6 @@
         "persistentContext.githubToken": {
           "type": "string",
           "description": "GitHub token for GitHub Models API (required if using github-models provider). Can also use GITHUB_TOKEN environment variable."
-        },
-        "persistentContext.deploymentLocation": {
-          "type": "string",
-          "description": "Where is this project deployed? (e.g., 'server.example.com', 'localhost:3000', 'AWS EC2 i-12345')."
-        },
-        "persistentContext.deploymentAccessMethod": {
-          "type": "string",
-          "description": "How do you access the deployment? (e.g., 'SSH', 'HTTP', 'Docker', 'Local')."
-        },
-        "persistentContext.deploymentMethod": {
-          "type": "string",
-          "description": "How are changes deployed? (e.g., 'Direct file edit + restart', 'Git pull', 'Docker rebuild', 'CI/CD')."
-        },
-        "persistentContext.isProduction": {
-          "type": "boolean",
-          "default": false,
-          "description": "Is this a production deployment?"
-        },
-        "persistentContext.currentWorkMode": {
-          "type": "string",
-          "description": "What mode is work in? (e.g., 'Feature Development', 'Maintenance', 'Bug Fixes', 'Testing')."
         }
       }
     }

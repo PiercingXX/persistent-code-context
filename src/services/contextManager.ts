@@ -209,13 +209,6 @@ ${this.recentChatContext.length > 0 ? this.recentChatContext.slice(-3).join('\n'
 ## Recent Changes
 ${snapshot.git.modifiedFiles.length > 0 ? snapshot.git.modifiedFiles.map((f) => `- ${f}`).join('\n') : 'No changes'}
 
-## Deployment Context
-- Location: ${snapshot.deploymentContext.location || 'Not specified'}
-- Access: ${snapshot.deploymentContext.accessMethod || 'Not specified'}
-- Method: ${snapshot.deploymentContext.deploymentMethod || 'Not specified'}
-- Mode: ${snapshot.deploymentContext.currentMode || 'Feature Development'}
-- Production: ${snapshot.deploymentContext.isProduction ? 'Yes' : 'No'}
-
 ## Recent Commits
 ${snapshot.git.recentCommits.map((c) => `- ${c.hash}: ${c.message}`).join('\n')}
 `;
