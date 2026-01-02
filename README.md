@@ -2,25 +2,17 @@
 
 This is the development directory for Phase 1 of the Persistent Context VSCode extension.
 
-## Project Structure
-
-```
-src/
-├── extension.ts           (Main entry point)
-├── services/
-│   ├── contextManager.ts  (Core context management)
-│   ├── fileService.ts     (File I/O operations)
-│   └── gitService.ts      (Git integration)
-├── ui/
-# Persistent Code Context
-
-**Never lose track of what you were working on again.**
+**Never lose track of what your you (and your AI) was working on again.**
 
 ## What is it?
 
-Ever closed VS Code and forgot what you were doing? Returned to a project after a week and couldn't remember where you left off? Spent 20 minutes trying to recall that important decision you made yesterday?
+Tired of constantly having to re explain a software stack, environment, shit, even the task you're working on to your AI?
+Ever change workspaces in VS Code and you nor your AI remembers where things are or what you were doing? 
+Returned to a project after a 3 months and couldn't remember what is where and spend 20 minutes figuring it out so you can then tell the AI what to do?
 
-Persistent Code Context solves this by automatically maintaining a running log of your work sessions, decisions, and notes - all stored as simple markdown files in your project.
+Persistent Code Context solves this by automatically maintaining a running log of your work sessions, decisions, and notes - all stored as simple markdown files in your project for you or your AI to summarize. 
+
+This is designed for real world use where you handle multiple projects/servers/workspace environments.
 
 ## Why use it?
 
@@ -30,11 +22,12 @@ Persistent Code Context solves this by automatically maintaining a running log o
 - **Merge sessions:** Combine multiple work sessions into a cohesive history
 - **Stay organized:** Everything is saved in plain markdown files you can read, edit, and version control
 
-Think of it as a work journal that writes itself.
+Think of it as a work journal that writes itself. 
+This extension logs what you do as you do it to give contextual memory to an AI assistant.
 
 ## How it works
 
-All context is stored in a `.vscode-context/` folder in your workspace as plain markdown files - no databases, no cloud, no lock-in. You own your data.
+All context is stored in a `.vscode-context/` folder in your workspace as plain markdown files - no databases, no cloud, no lock-in. You own your data. If you need to, drop this into a cloud folder and relink it (building this in in the future).
 
 ## Features
 
