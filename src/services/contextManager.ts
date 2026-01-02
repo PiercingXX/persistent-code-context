@@ -141,32 +141,8 @@ export class ContextManager {
   }
 
   private detectAndRecordChanges() {
-    try {
-      const openFiles = vscode.window.visibleTextEditors
-        .map(editor => path.basename(editor.document.fileName))
-        .join('\n');
-
-      const gitChanges = this.gitService.getChangedFiles().join('\n');
-
-      if (!this.enableChangeLogging) return;
-
-      // If open files changed
-      if (openFiles !== this.prevOpenFiles) {
-        const entry = `\n[${new Date().toLocaleString()}] Open files changed:\n${openFiles || 'None'}\n`;
-        this.fileService.appendFile('changes.md', entry);
-        this.prevOpenFiles = openFiles;
-      }
-
-      // If git changes changed
-      if (gitChanges !== this.prevGitChanges) {
-        const entry = `\n[${new Date().toLocaleString()}] Git status changed:\n${gitChanges || 'No changes'}\n`;
-        this.fileService.appendFile('changes.md', entry);
-        this.prevGitChanges = gitChanges;
-      }
-    } catch (e) {
-      // swallow errors to avoid noisy failures in autosave
-      console.error('persistent-context: detectAndRecordChanges error', e);
-    }
+    // Changes are now captured in activeContext.md updates
+    // This method is kept for potential future use but does nothing now
   }
 
   private onChatContextExtracted(context: string) {
@@ -179,12 +155,8 @@ export class ContextManager {
     // Extract deployment/work context from chat
     this.updateDeploymentContextFromChat(context);
 
-    // Append to changes log
-    if (this.enableChangeLogging) {
-      this.fileService.appendFile('changes.md', `\n${context}\n`);
-    }
-
     // Trigger immediate activeContext update with chat context
+    // Chat context is now included in the activeContext.md update
     void this.saveActiveContext().catch((err) =>
       console.error('[persistent-context] Failed to save active context after chat:', err.message)
     );
@@ -262,26 +234,45 @@ export class ContextManager {
 
       const sessionName = this.currentSession?.name || 'No active session';
       const status = this.currentSession ? 'In progress' : 'Idle';
+      const timestamp = new Date().toLocaleString();
 
-      const content = `# Project Context - ${sessionName}
+      // Check if activeContext.md exists
+      const existingContent = this.fileService.fileExists('activeContext.md') 
+        ? this.fileService.readFile('activeContext.md') 
+        : '';
 
-**Last Updated:** ${new Date().toLocaleString()}
+      // If file doesn't exist, create the header
+      if (!existingContent) {
+        const header = `# Project Context - ${sessionName}
+
+This file tracks the evolution of the project. New updates are appended below.
+
+---
+
+`;
+        this.fileService.writeFile('activeContext.md', header);
+      }
+
+      // Build the update entry
+      const updateEntry = `
+## Update: ${timestamp}
+
 **Status:** ${status}
 **Branch:** ${snapshot.git.branch}
 **AI Provider:** ${this.aiService.getProviderName()}
 
-## Project Summary
+### Project Summary
 ${aiSummary || this.buildFallbackSummary(snapshot)}
 
-## Current Work
+### Current Work
 - Session: ${sessionName}
 - Open Editors: ${snapshot.openEditors.length}
-  ${snapshot.openEditors.map((e) => `  - ${path.basename(e.path)}`).join('\n')}
+${snapshot.openEditors.length > 0 ? snapshot.openEditors.map((e) => `  - ${path.basename(e.path)}`).join('\n') : '  - No files open'}
 
-## Recent Chat Instructions
+### Recent Chat Instructions
 ${this.recentChatContext.length > 0 ? this.recentChatContext.slice(-3).join('\n') : '_No recent chat activity_'}
 
-## Deployment Context
+### Deployment Context
 ${snapshot.deploymentContext.location ? `- Location: ${snapshot.deploymentContext.location}` : ''}
 ${snapshot.deploymentContext.accessMethod ? `- Access Method: ${snapshot.deploymentContext.accessMethod}` : ''}
 ${snapshot.deploymentContext.deploymentMethod ? `- Deployment Method: ${snapshot.deploymentContext.deploymentMethod}` : ''}
@@ -289,14 +280,17 @@ ${snapshot.deploymentContext.currentWorkMode ? `- Current Mode: ${snapshot.deplo
 ${snapshot.deploymentContext.isProduction !== undefined ? `- Environment: ${snapshot.deploymentContext.isProduction ? 'Production' : 'Development'}` : ''}
 ${Object.keys(snapshot.deploymentContext).length === 0 ? '_No deployment info captured yet (mention these in chat to auto-capture)_' : ''}
 
-## Recent Changes
+### Recent Changes
 ${snapshot.git.modifiedFiles.length > 0 ? snapshot.git.modifiedFiles.map((f) => `- ${f}`).join('\n') : 'No changes'}
 
-## Recent Commits
+### Recent Commits
 ${snapshot.git.recentCommits.map((c) => `- ${c.hash}: ${c.message}`).join('\n')}
+
+---
 `;
 
-      this.fileService.writeFile('activeContext.md', content);
+      // Append the update
+      this.fileService.appendFile('activeContext.md', updateEntry);
     } catch (error) {
       console.error('[persistent-context] Failed to save active context:', error);
       // Continue with basic logging if AI fails
@@ -314,21 +308,42 @@ ${snapshot.git.recentCommits.map((c) => `- ${c.hash}: ${c.message}`).join('\n')}
 
     const sessionName = this.currentSession?.name || 'No active session';
     const status = this.currentSession ? 'In progress' : 'Idle';
+    const timestamp = new Date().toLocaleString();
 
-    const content = `# Session: ${sessionName}
+    // Check if activeContext.md exists
+    const existingContent = this.fileService.fileExists('activeContext.md') 
+      ? this.fileService.readFile('activeContext.md') 
+      : '';
 
-**Date:** ${new Date().toLocaleString()}
-**Branch:** ${branch}
+    // If file doesn't exist, create the header
+    if (!existingContent) {
+      const header = `# Project Context - ${sessionName}
+
+This file tracks the evolution of the project. New updates are appended below.
+
+---
+
+`;
+      this.fileService.writeFile('activeContext.md', header);
+    }
+
+    const updateEntry = `
+## Update: ${timestamp}
+
 **Status:** ${status}
+**Branch:** ${branch}
+**Session:** ${sessionName}
 
-## Open Files
+### Open Files
 ${openFiles || 'No files open'}
 
-## Recent Commits
+### Recent Commits
 ${recentCommits || 'No commits yet'}
+
+---
 `;
 
-    this.fileService.writeFile('activeContext.md', content);
+    this.fileService.appendFile('activeContext.md', updateEntry);
   }
 
   private buildFallbackSummary(snapshot: ContextSnapshot): string {
