@@ -2,6 +2,5 @@ node_modules/
 out/
 .test-temp/
 *.vsix
-.vscode-context/
 *.log
 .DS_Store

@@ -65,6 +65,11 @@
     "configuration": {
       "title": "Persistent Context",
       "properties": {
+        "persistentContext.storageDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Directory to store context data (defaults to ~/.vscode-persistent-context). Each workspace gets its own subdirectory."
+        },
         "persistentContext.autosaveInterval": {
           "type": "number",
           "default": 60,

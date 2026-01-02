@@ -1,5 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
+import * as crypto from 'crypto';
 import * as vscode from 'vscode';
 import { Session, ProjectContext } from '../utils/types';
 import { FileService } from './fileService';
@@ -19,11 +21,19 @@ export class ContextManager {
   private prevGitChanges: string = '';
 
   constructor(workspaceRoot: string) {
-    this.contextDir = path.join(workspaceRoot, '.vscode-context');
+    // Use common directory outside workspace to prevent accidental commits
+    const cfg = vscode.workspace.getConfiguration('persistentContext');
+    const commonDir = cfg.get<string>('storageDirectory', path.join(os.homedir(), '.vscode-persistent-context'));
+    
+    // Create a hash of the workspace path for unique identification
+    const workspaceHash = crypto.createHash('md5').update(workspaceRoot).digest('hex').substring(0, 8);
+    const workspaceName = path.basename(workspaceRoot);
+    
+    this.contextDir = path.join(commonDir, `${workspaceName}-${workspaceHash}`);
     this.fileService = new FileService(this.contextDir);
     this.gitService = new GitService(workspaceRoot);
     this.ensureContextDir();
-    this.initializeGitIgnore();
+    this.initializeWorkspaceInfo(workspaceRoot);
     // Read configuration and start autosave according to settings
     this.loadConfiguration();
     this.configWatcher = vscode.workspace.onDidChangeConfiguration(e => {
@@ -48,10 +58,14 @@ export class ContextManager {
     this.fileService.ensureDir();
   }
 
-  private initializeGitIgnore() {
-    const gitignorePath = path.join(this.contextDir, '.gitignore');
-    if (!fs.existsSync(gitignorePath)) {
-      fs.writeFileSync(gitignorePath, '', 'utf-8');
+  private initializeWorkspaceInfo(workspaceRoot: string) {
+    // Store workspace path for reference
+    const infoPath = path.join(this.contextDir, '.workspace-info');
+    if (!fs.existsSync(infoPath)) {
+      fs.writeFileSync(infoPath, JSON.stringify({
+        workspacePath: workspaceRoot,
+        created: new Date().toISOString()
+      }, null, 2), 'utf-8');
     }
   }
 

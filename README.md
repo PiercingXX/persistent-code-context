@@ -1,69 +1,47 @@
-# Persistent Context - Build Directory
+# Persistent Code Context
 
-This is the development directory for Phase 1 of the Persistent Context VSCode extension.
+> *A VSCode extension that remembers what you were working on—because you won't.*
 
-**Never lose track of what your you (and your AI) was working on again.**
+Automatically maintains a running log of your work sessions, decisions, and context across workspaces. Stored locally as plain markdown. No cloud (unless you want it), no databases, no drama.
 
-## What is it?
+**Never lose track of what you (and your AI overlord) were working on again.**
 
-Tired of constantly having to re explain a software stack, environment, shit, even the task you're working on to your AI?
-Ever change workspaces in VS Code and you nor your AI remembers where things are or what you were doing? 
-Returned to a project after a 3 months and couldn't remember what is where and spend 20 minutes figuring it out so you can then tell the AI what to do?
+## What Fresh Hell Is This?
 
-Persistent Code Context solves this by automatically maintaining a running log of your work sessions, decisions, and notes - all stored as simple markdown files in your project for you or your AI to summarize. 
+Oh, you know, just another extension because your brain—and your AI assistant's context window—have the memory retention of a goldfish on vacation.
 
-This is designed for real world use where you handle multiple projects/servers/workspace environments.
+Ever found yourself:
+- Re-explaining your entire tech stack to your AI for the 47th time this week?
+- Switching VS Code workspaces and suddenly neither you nor your AI remembers where anything is?
+- Coming back to a project after 3 months and spending the first hour just figuring out what the hell past-you was thinking?
+- Wishing your AI could remember that one architectural decision you made at 2 AM that seemed brilliant at the time?
 
-## Why use it?
+Yeah. We've all been there. It sucks.
 
-- **Remember your work:** Automatically tracks what you're working on, what files are open, recent commits
-- **Resume seamlessly:** Get prompted to continue your last session when you reopen VS Code
-- **Track decisions:** Keep a log of why you made certain architectural or implementation choices
-- **Merge sessions:** Combine multiple work sessions into a cohesive history
-- **Stay organized:** Everything is saved in plain markdown files you can read, edit, and version control
+**Persistent Code Context** solves this by automatically maintaining a running log of your work sessions, decisions, and general shenanigans—all stored as simple markdown files. You know, files you can actually *read* without a PhD in database archaeology.
 
-Think of it as a work journal that writes itself. 
-This extension logs what you do as you do it to give contextual memory to an AI assistant.
+## Why Should You Care?
 
-## How it works
+- **Remember your work:** Automatically tracks what you're working on, what files are open, and recent commits (you know, like a journal you'll never have to write yourself)
+- **Resume seamlessly:** Get prompted to continue your last session when you reopen VS Code (shocking, I know)
+- **Track decisions:** Keep a log of why you made certain architectural choices (for when future-you inevitably questions past-you's sanity)
+- **Merge sessions:** Combine multiple work sessions because apparently you can't finish anything in one sitting
+- **Stay organized:** Plain markdown files. No databases, no cloud, no "oops we got acquired and your data is gone" nonsense
 
-All context is stored in a `.vscode-context/` folder in your workspace as plain markdown files - no databases, no cloud, no lock-in. You own your data. If you need to, drop this into a cloud folder and relink it (building this in in the future).
+Think of it as a work journal that actually writes itself. Revolutionary concept, right?
 
-## Features
+## How It Works (The Non-Bullshit Version)
 
-### Session Management
-- Start/End sessions with custom names
-- Resume previous sessions on startup
-- Merge multiple sessions into consolidated entries
-- Auto-prompt when multiple sessions detected
+All context is stored in `~/.vscode-persistent-context/<workspace-name>-<hash>/` as plain markdown files:
 
-### Persistent Storage
-- `.vscode-context/activeContext.md` - current session state
-- `.vscode-context/progress.md` - session history
-- `.vscode-context/changes.md` - change log
-- `.vscode-context/decisionLog.md` - decision tracking
+- **No databases** - Just markdown. You know how to open markdown files, right?
+- **No cloud** - Everything stays on your machine (until you set up the optional backup)
+- **No lock-in** - Can't afford vendor lock-in when there's no vendor
+- **No AI Required** - Works with or without your favorite AI assistant (but let's be honest, that's why you're here)
 
-### Commands (via Command Palette)
-- `Persistent Code Context: Start Session` - Begin new work session
-- `Persistent Code Context: End Session` - Save and close session
-- `Persistent Code Context: View Session` - Browse session history
-- `Persistent Code Context: View History` - Open progress.md
-- `Persistent Code Context: View Decisions` - Open decision log
-- `Persistent Code Context: Add Note` - Quick note capture
-- `Persistent Code Context: Copy Context` - Copy to clipboard
-- `Persistent Code Context: View Context` - View active context
-- `Persistent Code Context: Settings` - Open settings
+Each workspace gets its own directory with a unique hash, so you can have 47 projects all named "test" and the extension won't have an existential crisis.
 
-### Configuration
-- `persistentContext.autosaveInterval` - Seconds between autosaves (default: 60)
-- `persistentContext.enableAutosave` - Enable/disable autosave (default: true)
-- `persistentContext.enableChangeLogging` - Log file/git changes (default: true)
-
-### Status Bar Integration
-- Shows active session name
-- Click to view context
-
-## Installation
+## 🚀 Quick Start
 
 **From GitHub Releases:**
 
@@ -71,13 +49,67 @@ All context is stored in a `.vscode-context/` folder in your workspace as plain 
 # Download the latest release
 wget https://github.com/PiercingXX/persistent-code-context/releases/latest/download/persistent-context-0.0.1.vsix
 
-# Install
+# Install it
 code --install-extension persistent-context-0.0.1.vsix
 ```
 
-**Or download manually from:** https://github.com/PiercingXX/persistent-code-context/releases
+**Manual:** Download from [releases page](https://github.com/PiercingXX/persistent-code-context/releases)
 
-## Development
+---
+
+## 🌟 Features
+
+### Session Management
+• Start/End sessions with custom names  
+• Resume previous sessions on startup  
+• Merge multiple sessions when your ADHD kicked in  
+• Auto-prompt when unfinished business is detected
+
+### Persistent Storage
+Each workspace gets its own directory with markdown files:
+
+• `activeContext.md` – What you're doing right now  
+• `progress.md` – The trail of productivity (or lack thereof)  
+• `changes.md` – Every time you breathe near a file  
+• `decisionLog.md` – For documenting genius (or future regrets)  
+• `.workspace-info` – Boring metadata stuff
+
+### Commands (via Command Palette)
+All prefixed with `Persistent Code Context:`
+
+• `Start Session` – Begin productive procrastination  
+• `End Session` – Admit defeat and save your work  
+• `View Session` – Review what you thought you were doing  
+• `View History` – Browse your trail of tears  
+• `View Decisions` – Question past decisions  
+• `Add Note` – Quick notes when inspiration strikes  
+• `Copy Context` – Copy everything for your AI  
+• `View Context` – See what the extension thinks you're doing  
+• `Settings` – Tweak the defaults
+
+### Configuration
+
+• **`persistentContext.storageDirectory`** – Where to store context (default: `~/.vscode-persistent-context`)  
+• **`persistentContext.autosaveInterval`** – Seconds between autosaves (default: 60)  
+• **`persistentContext.enableAutosave`** – Enable/disable autosave (default: true)  
+• **`persistentContext.enableChangeLogging`** – Log file/git changes (default: true)
+
+---
+
+## 4be Sync (DIY)
+
+The extension writes to `persistentContext.storageDirectory` (default: `~/.vscode-persistent-context`). It never auto-syncs.
+
+If you want Git backup:
+• `cd ~/.vscode-persistent-context && git init`  
+• Add your private remote and push on your own schedule  
+• Automate however you like (cron, systemd timers, custom scripts)
+
+Sample scripts exist in `scripts/` (`setup-backup.sh`, `sync-context.sh`) but they are **manual** and off by default. Use or ignore as you prefer.
+
+---
+
+## 🛠️ Development
 
 **Setup:**
 
@@ -104,35 +136,62 @@ npm test
 npx vsce package --allow-missing-repository
 ```
 
-## Technical Details
+---
 
-- TypeScript 4.7+
-- VS Code Engine: ^1.70.0
-- Node.js 16+
-- Dependencies: None (runtime)
-- Dev Dependencies: Mocha, Chai, ts-node, @vscode/vsce
+## 🔧 Technical Details
 
-## Known Limitations
+• TypeScript 4.7+  
+• VS Code Engine: ^1.70.0  
+• Node.js 16+  
+• Runtime Dependencies: None (zilch, nada)  
+• Dev Dependencies: Mocha, Chai, ts-node, @vscode/vsce
 
-- Git integration requires git CLI installed
-- FileSystemWatcher may have slight delay on some systems
-- No remote sync (planned for Phase 2)
+---
 
-## Future Plans (Phase 2+)
+## ⚠️ Known Limitations
 
-- Optional cloud sync / cloud backup encrypted per user
-- Integration with issue trackers to link decisions
-- Enhanced decision capture UI and tagging
-- Time-travel diffs for project context
+• Git integration requires git CLI installed  
+• FileSystemWatcher may lag on slow systems  
+• Won't make you a better programmer (you're on your own there)
 
-## Contributing
+---
 
-Issues and pull requests welcome! Releases are automated via GitHub Actions on version tags.
+## 🚧 Future Plans (Phase 2+)
 
-## License
+*Assuming I don't abandon this like my other 47 side projects:*
 
-Apache-2.0 License - See LICENSE file
+• Optional cloud sync with encryption  
+• Integration with issue trackers  
+• Enhanced decision capture UI with tagging  
+• Time-travel diffs (Doctor Who cosplay optional)  
+• AI-generated summaries of your work sessions
 
-## Author
+---
 
-PiercingXX
+## 🤝 Contributing
+
+Found a bug? Have a feature idea? Fork, branch, and PR welcome. Keep code POSIX-friendly and avoid hard-coded paths when possible.
+
+Releases are automated via GitHub Actions.
+
+---
+
+## 📄 License
+
+MIT © PiercingXX  
+See the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📞 Support & Contact
+
+```
+Email: Don't
+
+Open an issue in the relevant repo instead. If it's a rant, make it entertaining.
+```
+
+---
+
+*Made with ☕ and existential dread about forgetting what I was working on.*
+
