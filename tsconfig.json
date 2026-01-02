@@ -10,7 +10,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
-    "types": ["node", "vscode"]
+    "types": ["node", "vscode", "mocha"]
   },
   "include": ["src"],
   "exclude": ["node_modules", ".vscode-test", "src/test"]
