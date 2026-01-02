@@ -11,6 +11,7 @@ export class FileService {
   }
 
   writeFile(filename: string, content: string) {
+    this.ensureDir();
     const filepath = path.join(this.contextDir, filename);
     fs.writeFileSync(filepath, content, 'utf-8');
   }

@@ -38,4 +38,16 @@ export class GitService {
       return [];
     }
   }
+
+  getStagedFiles(): string[] {
+    try {
+      const staged = execSync('git diff --cached --name-only', {
+        cwd: this.workspaceRoot,
+        encoding: 'utf-8',
+      }).trim();
+      return staged.split('\n').filter(line => line.length > 0);
+    } catch {
+      return [];
+    }
+  }
 }

@@ -3,7 +3,9 @@
   "displayName": "Persistent Code Context",
   "description": "VSCode extension that maintains persistent project code context across sessions using local markdown files",
   "version": "0.0.1",
+  "publisher": "PiercingXX",
   "author": "PiercingXX",
+  "icon": "icon.png",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -84,6 +86,46 @@
           "type": "boolean",
           "default": true,
           "description": "Enable automatic periodic saving of activeContext.md."
+        },
+        "persistentContext.aiProvider": {
+          "type": "string",
+          "enum": ["auto", "github-models", "copilot", "ollama", "openai", "anthropic"],
+          "default": "auto",
+          "description": "AI provider to use for context summarization. 'auto' tries in order: Copilot, Ollama."
+        },
+        "persistentContext.ollamaEndpoint": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Endpoint for local Ollama instance."
+        },
+        "persistentContext.openaiApiKey": {
+          "type": "string",
+          "description": "API key for OpenAI (required if using OpenAI provider)."
+        },
+        "persistentContext.anthropicApiKey": {
+          "type": "string",
+          "description": "API key for Anthropic Claude (required if using Anthropic provider)."
+        },
+        "persistentContext.deploymentLocation": {
+          "type": "string",
+          "description": "Where is this project deployed? (e.g., 'server.example.com', 'localhost:3000', 'AWS EC2 i-12345')."
+        },
+        "persistentContext.deploymentAccessMethod": {
+          "type": "string",
+          "description": "How do you access the deployment? (e.g., 'SSH', 'HTTP', 'Docker', 'Local')."
+        },
+        "persistentContext.deploymentMethod": {
+          "type": "string",
+          "description": "How are changes deployed? (e.g., 'Direct file edit + restart', 'Git pull', 'Docker rebuild', 'CI/CD')."
+        },
+        "persistentContext.isProduction": {
+          "type": "boolean",
+          "default": false,
+          "description": "Is this a production deployment?"
+        },
+        "persistentContext.currentWorkMode": {
+          "type": "string",
+          "description": "What mode is work in? (e.g., 'Feature Development', 'Maintenance', 'Bug Fixes', 'Testing')."
         }
       }
     }

@@ -6,12 +6,17 @@ import * as vscode from 'vscode';
 import { Session, ProjectContext } from '../utils/types';
 import { FileService } from './fileService';
 import { GitService } from './gitService';
+import { AIService } from './aiService';
+import { ContextSnapshotCollector, ContextSnapshot } from './snapshotCollector';
 
 export class ContextManager {
   private contextDir: string;
+  private workspaceRoot: string;
   private currentSession?: Session;
   private fileService: FileService;
   private gitService: GitService;
+  private aiService: AIService;
+  private snapshotCollector: ContextSnapshotCollector;
   private autosaveIntervalMs = 60000;
   private autosaveTimer?: NodeJS.Timeout;
   private enableAutosave: boolean = true;
@@ -21,9 +26,13 @@ export class ContextManager {
   private prevGitChanges: string = '';
 
   constructor(workspaceRoot: string) {
+    this.workspaceRoot = workspaceRoot;
     // Use common directory outside workspace to prevent accidental commits
     const cfg = vscode.workspace.getConfiguration('persistentContext');
-    const commonDir = cfg.get<string>('storageDirectory', path.join(os.homedir(), '.vscode-persistent-context'));
+    const storageSetting = cfg.get<string>('storageDirectory');
+    const commonDir = (storageSetting && storageSetting.trim()) 
+      ? storageSetting 
+      : path.join(os.homedir(), '.vscode-persistent-context');
     
     // Create a hash of the workspace path for unique identification
     const workspaceHash = crypto.createHash('md5').update(workspaceRoot).digest('hex').substring(0, 8);
@@ -32,6 +41,8 @@ export class ContextManager {
     this.contextDir = path.join(commonDir, `${workspaceName}-${workspaceHash}`);
     this.fileService = new FileService(this.contextDir);
     this.gitService = new GitService(workspaceRoot);
+    this.aiService = new AIService(workspaceRoot);
+    this.snapshotCollector = new ContextSnapshotCollector(workspaceRoot, this.gitService);
     this.ensureContextDir();
     this.initializeWorkspaceInfo(workspaceRoot);
     // Read configuration and start autosave according to settings
@@ -75,7 +86,10 @@ export class ContextManager {
       name: name,
       startTime: new Date(),
     };
-    this.saveActiveContext();
+    // Fire and forget - errors are logged internally
+    void this.saveActiveContext().catch((err) =>
+      console.error('[persistent-context] Failed to save active context:', err.message)
+    );
     this.startAutosave();
   }
 
@@ -98,7 +112,10 @@ export class ContextManager {
     this.stopAutosave();
     this.autosaveTimer = setInterval(() => {
       // Always save the active context (records idle or active)
-      this.saveActiveContext();
+      // Fire and forget - errors are logged internally
+      void this.saveActiveContext().catch((err) =>
+        console.error('[persistent-context] Failed to save active context:', err.message)
+      );
       // Detect passive changes (open files / git changes) and log them
       this.detectAndRecordChanges();
     }, this.autosaveIntervalMs);
@@ -140,7 +157,52 @@ export class ContextManager {
     }
   }
 
-  private saveActiveContext() {
+  private async saveActiveContext() {
+    try {
+      const snapshot = await this.snapshotCollector.collect();
+      const aiSummary = await this.aiService.summarize(snapshot);
+
+      const sessionName = this.currentSession?.name || 'No active session';
+      const status = this.currentSession ? 'In progress' : 'Idle';
+
+      const content = `# Project Context - ${sessionName}
+
+**Last Updated:** ${new Date().toLocaleString()}
+**Status:** ${status}
+**Branch:** ${snapshot.git.branch}
+**AI Provider:** ${this.aiService.getProviderName()}
+
+## Project Summary
+${aiSummary || this.buildFallbackSummary(snapshot)}
+
+## Current Work
+- Session: ${sessionName}
+- Open Editors: ${snapshot.openEditors.length}
+  ${snapshot.openEditors.map((e) => `  - ${path.basename(e.path)}`).join('\n')}
+
+## Recent Changes
+${snapshot.git.modifiedFiles.length > 0 ? snapshot.git.modifiedFiles.map((f) => `- ${f}`).join('\n') : 'No changes'}
+
+## Deployment Context
+- Location: ${snapshot.deploymentContext.location || 'Not specified'}
+- Access: ${snapshot.deploymentContext.accessMethod || 'Not specified'}
+- Method: ${snapshot.deploymentContext.deploymentMethod || 'Not specified'}
+- Mode: ${snapshot.deploymentContext.currentMode || 'Feature Development'}
+- Production: ${snapshot.deploymentContext.isProduction ? 'Yes' : 'No'}
+
+## Recent Commits
+${snapshot.git.recentCommits.map((c) => `- ${c.hash}: ${c.message}`).join('\n')}
+`;
+
+      this.fileService.writeFile('activeContext.md', content);
+    } catch (error) {
+      console.error('[persistent-context] Failed to save active context:', error);
+      // Continue with basic logging if AI fails
+      this.saveBasicContext();
+    }
+  }
+
+  private saveBasicContext() {
     const openFiles = vscode.window.visibleTextEditors
       .map(editor => path.basename(editor.document.fileName))
       .join('\n');
@@ -157,23 +219,32 @@ export class ContextManager {
 **Branch:** ${branch}
 **Status:** ${status}
 
-## What I'm Working On
-${this.currentSession?.name || 'None'}
-
 ## Open Files
 ${openFiles || 'No files open'}
 
 ## Recent Commits
 ${recentCommits || 'No commits yet'}
-
-## Recent Progress
-- Last saved: ${new Date().toLocaleString()}
-
-## What's Next
-- Continue development
 `;
 
     this.fileService.writeFile('activeContext.md', content);
+  }
+
+  private buildFallbackSummary(snapshot: ContextSnapshot): string {
+    return `
+### Workspace
+- **Name:** ${snapshot.workspaceMetadata.name}
+- **Language:** ${snapshot.workspaceMetadata.mainLanguage}
+- **Root:** ${snapshot.workspaceMetadata.rootPath}
+
+### Project Structure
+- **Directories:** ${snapshot.projectStructure.directories.join(', ')}
+- **Key Files:** ${snapshot.projectStructure.keyFiles.join(', ')}
+
+### Recent Activity
+- **Branch:** ${snapshot.git.branch}
+- **Last Commits:** ${snapshot.git.recentCommits.map((c) => c.message).join(', ')}
+- **Modified:** ${snapshot.git.modifiedFiles.length} files
+`;
   }
 
   private saveSessionHistory() {
@@ -209,7 +280,10 @@ ${recentCommits || 'No commits yet'}
       name: name,
       startTime: new Date(),
     };
-    this.saveActiveContext();
+    // Fire and forget - errors are logged internally
+    void this.saveActiveContext().catch((err) =>
+      console.error('[persistent-context] Failed to save active context:', err.message)
+    );
     this.startAutosave();
   }
 
@@ -256,7 +330,10 @@ ${recentCommits || 'No commits yet'}
     this.fileService.appendFile('progress.md', historyNote);
 
     vscode.window.showInformationMessage('✓ Note added');
-    this.saveActiveContext();
+    // Fire and forget - errors are logged internally
+    void this.saveActiveContext().catch((err) =>
+      console.error('[persistent-context] Failed to save active context:', err.message)
+    );
   }
 
   /**
@@ -361,7 +438,10 @@ ${recentCommits || 'No commits yet'}
       name: mergedTitle,
       startTime: new Date(),
     };
-    this.saveActiveContext();
+    // Fire and forget - errors are logged internally
+    void this.saveActiveContext().catch((err) =>
+      console.error('[persistent-context] Failed to save active context:', err.message)
+    );
     this.startAutosave();
     return mergedTitle;
   }
