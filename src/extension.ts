@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   
   if (!workspaceRoot) {
-    vscode.window.showErrorMessage('No workspace folder open');
+    // Silently skip activation when no workspace is open
     return;
   }
 

@@ -8,6 +8,7 @@ import { FileService } from './fileService';
 import { GitService } from './gitService';
 import { AIService } from './aiService';
 import { ContextSnapshotCollector, ContextSnapshot } from './snapshotCollector';
+import { ChatContextWatcher } from './chatContextWatcher';
 
 export class ContextManager {
   private contextDir: string;
@@ -17,6 +18,7 @@ export class ContextManager {
   private gitService: GitService;
   private aiService: AIService;
   private snapshotCollector: ContextSnapshotCollector;
+  private chatWatcher: ChatContextWatcher;
   private autosaveIntervalMs = 60000;
   private autosaveTimer?: NodeJS.Timeout;
   private enableAutosave: boolean = true;
@@ -24,6 +26,7 @@ export class ContextManager {
   private configWatcher?: vscode.Disposable;
   private prevOpenFiles: string = '';
   private prevGitChanges: string = '';
+  private recentChatContext: string[] = [];
 
   constructor(workspaceRoot: string) {
     this.workspaceRoot = workspaceRoot;
@@ -43,6 +46,7 @@ export class ContextManager {
     this.gitService = new GitService(workspaceRoot);
     this.aiService = new AIService(workspaceRoot);
     this.snapshotCollector = new ContextSnapshotCollector(workspaceRoot, this.gitService);
+    this.chatWatcher = new ChatContextWatcher((context) => this.onChatContextExtracted(context));
     this.ensureContextDir();
     this.initializeWorkspaceInfo(workspaceRoot);
     // Read configuration and start autosave according to settings
@@ -106,6 +110,7 @@ export class ContextManager {
   dispose() {
     this.stopAutosave();
     if (this.configWatcher) this.configWatcher.dispose();
+    this.chatWatcher.dispose();
   }
 
   private startAutosave() {
@@ -157,6 +162,24 @@ export class ContextManager {
     }
   }
 
+  private onChatContextExtracted(context: string) {
+    // Store recent chat context (keep last 10)
+    this.recentChatContext.push(context);
+    if (this.recentChatContext.length > 10) {
+      this.recentChatContext.shift();
+    }
+
+    // Append to changes log
+    if (this.enableChangeLogging) {
+      this.fileService.appendFile('changes.md', `\n${context}\n`);
+    }
+
+    // Trigger immediate activeContext update with chat context
+    void this.saveActiveContext().catch((err) =>
+      console.error('[persistent-context] Failed to save active context after chat:', err.message)
+    );
+  }
+
   private async saveActiveContext() {
     try {
       const snapshot = await this.snapshotCollector.collect();
@@ -179,6 +202,9 @@ ${aiSummary || this.buildFallbackSummary(snapshot)}
 - Session: ${sessionName}
 - Open Editors: ${snapshot.openEditors.length}
   ${snapshot.openEditors.map((e) => `  - ${path.basename(e.path)}`).join('\n')}
+
+## Recent Chat Instructions
+${this.recentChatContext.length > 0 ? this.recentChatContext.slice(-3).join('\n') : '_No recent chat activity_'}
 
 ## Recent Changes
 ${snapshot.git.modifiedFiles.length > 0 ? snapshot.git.modifiedFiles.map((f) => `- ${f}`).join('\n') : 'No changes'}
