@@ -140,35 +140,40 @@ class GitHubCopilotProvider implements AIProvider {
   }
 
   private buildPrompt(snapshot: ContextSnapshot): string {
+    const escapeField = (val: any): string => {
+      if (!val) return '';
+      return String(val).replace(/`/g, '\\`').replace(/\$/g, '\\$');
+    };
+
     return `You are a technical AI assistant. Analyze this workspace snapshot and provide a concise summary that will help you or another AI quickly understand the project context.
 
 ## Workspace Metadata
-- Name: ${snapshot.workspaceMetadata.name}
-- Language: ${snapshot.workspaceMetadata.mainLanguage}
-- Node Version: ${snapshot.workspaceMetadata.nodeVersion || 'N/A'}
+- Name: ${escapeField(snapshot.workspaceMetadata.name)}
+- Language: ${escapeField(snapshot.workspaceMetadata.mainLanguage)}
+- Node Version: ${escapeField(snapshot.workspaceMetadata.nodeVersion) || 'N/A'}
 
 ## Project Structure
-Directories: ${snapshot.projectStructure.directories.join(', ')}
-Key Files: ${snapshot.projectStructure.keyFiles.join(', ')}
+Directories: ${snapshot.projectStructure.directories.map(escapeField).join(', ')}
+Key Files: ${snapshot.projectStructure.keyFiles.map(escapeField).join(', ')}
 
 ## Git Status
-- Branch: ${snapshot.git.branch}
-- Recent Commits: ${snapshot.git.recentCommits.map((c) => c.message).join('\n  - ')}
-- Modified Files: ${snapshot.git.modifiedFiles.join(', ') || 'None'}
-- Staged Files: ${snapshot.git.stagedFiles.join(', ') || 'None'}
+- Branch: ${escapeField(snapshot.git.branch)}
+- Recent Commits: ${snapshot.git.recentCommits.map((c) => escapeField(c.message)).join('\n  - ')}
+- Modified Files: ${snapshot.git.modifiedFiles.map(escapeField).join(', ') || 'None'}
+- Staged Files: ${snapshot.git.stagedFiles.map(escapeField).join(', ') || 'None'}
 
 ## Open Editors
-${snapshot.openEditors.map((e) => `- ${e.path} (${e.language}, ${e.lines} lines)`).join('\n')}
+${snapshot.openEditors.map((e) => `- ${escapeField(e.path)} (${escapeField(e.language)}, ${e.lines} lines)`).join('\n')}
 
 ## Deployment Context
-- Location: ${snapshot.deploymentContext.location || 'Not specified'}
-- Access Method: ${snapshot.deploymentContext.accessMethod || 'Not specified'}
-- Deployment Method: ${snapshot.deploymentContext.deploymentMethod || 'Not specified'}
-- Current Mode: ${snapshot.deploymentContext.currentMode || 'Not specified'}
+- Location: ${escapeField(snapshot.deploymentContext.location) || 'Not specified'}
+- Access Method: ${escapeField(snapshot.deploymentContext.accessMethod) || 'Not specified'}
+- Deployment Method: ${escapeField(snapshot.deploymentContext.deploymentMethod) || 'Not specified'}
+- Current Mode: ${escapeField(snapshot.deploymentContext.currentMode) || 'Not specified'}
 - Production: ${snapshot.deploymentContext.isProduction ? 'Yes' : 'No'}
 
 ## Required Extensions
-${snapshot.vscodeContext.requiredExtensions.join(', ') || 'None'}
+${snapshot.vscodeContext.requiredExtensions.map(escapeField).join(', ') || 'None'}
 
 ## Task
 Provide a comprehensive summary covering:
@@ -218,8 +223,10 @@ class GitHubModelsProvider implements AIProvider {
 
       const options = {
         hostname: 'models.inference.ai.azure.com',
+        port: 443,
         path: '/chat/completions',
         method: 'POST',
+        timeout: 30000,
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(postData),
@@ -266,41 +273,51 @@ class GitHubModelsProvider implements AIProvider {
         );
       });
 
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('GitHub Models API request timeout'));
+      });
+
       req.write(postData);
       req.end();
     });
   }
 
   private buildPrompt(snapshot: ContextSnapshot): string {
+    const escapeField = (val: any): string => {
+      if (!val) return '';
+      return String(val).replace(/`/g, '\\`').replace(/\$/g, '\\$');
+    };
+
     return `You are a technical AI assistant. Analyze this workspace snapshot and provide a concise summary that will help you or another AI quickly understand the project context.
 
 ## Workspace Metadata
-- Name: ${snapshot.workspaceMetadata.name}
-- Language: ${snapshot.workspaceMetadata.mainLanguage}
-- Node Version: ${snapshot.workspaceMetadata.nodeVersion || 'N/A'}
+- Name: ${escapeField(snapshot.workspaceMetadata.name)}
+- Language: ${escapeField(snapshot.workspaceMetadata.mainLanguage)}
+- Node Version: ${escapeField(snapshot.workspaceMetadata.nodeVersion) || 'N/A'}
 
 ## Project Structure
-Directories: ${snapshot.projectStructure.directories.join(', ')}
-Key Files: ${snapshot.projectStructure.keyFiles.join(', ')}
+Directories: ${snapshot.projectStructure.directories.map(escapeField).join(', ')}
+Key Files: ${snapshot.projectStructure.keyFiles.map(escapeField).join(', ')}
 
 ## Git Status
-- Branch: ${snapshot.git.branch}
-- Recent Commits: ${snapshot.git.recentCommits.map((c) => c.message).join('\n  - ')}
-- Modified Files: ${snapshot.git.modifiedFiles.join(', ') || 'None'}
-- Staged Files: ${snapshot.git.stagedFiles.join(', ') || 'None'}
+- Branch: ${escapeField(snapshot.git.branch)}
+- Recent Commits: ${snapshot.git.recentCommits.map((c) => escapeField(c.message)).join('\n  - ')}
+- Modified Files: ${snapshot.git.modifiedFiles.map(escapeField).join(', ') || 'None'}
+- Staged Files: ${snapshot.git.stagedFiles.map(escapeField).join(', ') || 'None'}
 
 ## Open Editors
-${snapshot.openEditors.map((e) => `- ${e.path} (${e.language}, ${e.lines} lines)`).join('\n')}
+${snapshot.openEditors.map((e) => `- ${escapeField(e.path)} (${escapeField(e.language)}, ${e.lines} lines)`).join('\n')}
 
 ## Deployment Context
-- Location: ${snapshot.deploymentContext.location || 'Not specified'}
-- Access Method: ${snapshot.deploymentContext.accessMethod || 'Not specified'}
-- Deployment Method: ${snapshot.deploymentContext.deploymentMethod || 'Not specified'}
-- Current Mode: ${snapshot.deploymentContext.currentMode || 'Not specified'}
+- Location: ${escapeField(snapshot.deploymentContext.location) || 'Not specified'}
+- Access Method: ${escapeField(snapshot.deploymentContext.accessMethod) || 'Not specified'}
+- Deployment Method: ${escapeField(snapshot.deploymentContext.deploymentMethod) || 'Not specified'}
+- Current Mode: ${escapeField(snapshot.deploymentContext.currentMode) || 'Not specified'}
 - Production: ${snapshot.deploymentContext.isProduction ? 'Yes' : 'No'}
 
 ## Required Extensions
-${snapshot.vscodeContext.requiredExtensions.join(', ') || 'None'}
+${snapshot.vscodeContext.requiredExtensions.map(escapeField).join(', ') || 'None'}
 
 ## Task
 Provide a comprehensive summary covering:
@@ -340,9 +357,10 @@ class OllamaProvider implements AIProvider {
 
       const options = {
         hostname: url.hostname,
-        port: url.port,
+        port: url.port || (isHttps ? 443 : 80),
         path: url.pathname + url.search,
         method: 'POST',
+        timeout: 30000,
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(postData),
@@ -368,41 +386,51 @@ class OllamaProvider implements AIProvider {
         reject(new Error(`Failed to reach Ollama at ${this.endpoint}: ${e.message}`));
       });
 
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error(`Ollama request timeout at ${this.endpoint}`));
+      });
+
       req.write(postData);
       req.end();
     });
   }
 
   private buildPrompt(snapshot: ContextSnapshot): string {
+    const escapeField = (val: any): string => {
+      if (!val) return '';
+      return String(val).replace(/`/g, '\\`').replace(/\$/g, '\\$');
+    };
+
     return `You are a technical AI assistant. Analyze this workspace snapshot and provide a concise summary that will help you or another AI quickly understand the project context.
 
 ## Workspace Metadata
-- Name: ${snapshot.workspaceMetadata.name}
-- Language: ${snapshot.workspaceMetadata.mainLanguage}
-- Node Version: ${snapshot.workspaceMetadata.nodeVersion || 'N/A'}
+- Name: ${escapeField(snapshot.workspaceMetadata.name)}
+- Language: ${escapeField(snapshot.workspaceMetadata.mainLanguage)}
+- Node Version: ${escapeField(snapshot.workspaceMetadata.nodeVersion) || 'N/A'}
 
 ## Project Structure
-Directories: ${snapshot.projectStructure.directories.join(', ')}
-Key Files: ${snapshot.projectStructure.keyFiles.join(', ')}
+Directories: ${snapshot.projectStructure.directories.map(escapeField).join(', ')}
+Key Files: ${snapshot.projectStructure.keyFiles.map(escapeField).join(', ')}
 
 ## Git Status
-- Branch: ${snapshot.git.branch}
-- Recent Commits: ${snapshot.git.recentCommits.map((c) => c.message).join('\n  - ')}
-- Modified Files: ${snapshot.git.modifiedFiles.join(', ') || 'None'}
-- Staged Files: ${snapshot.git.stagedFiles.join(', ') || 'None'}
+- Branch: ${escapeField(snapshot.git.branch)}
+- Recent Commits: ${snapshot.git.recentCommits.map((c) => escapeField(c.message)).join('\n  - ')}
+- Modified Files: ${snapshot.git.modifiedFiles.map(escapeField).join(', ') || 'None'}
+- Staged Files: ${snapshot.git.stagedFiles.map(escapeField).join(', ') || 'None'}
 
 ## Open Editors
-${snapshot.openEditors.map((e) => `- ${e.path} (${e.language}, ${e.lines} lines)`).join('\n')}
+${snapshot.openEditors.map((e) => `- ${escapeField(e.path)} (${escapeField(e.language)}, ${e.lines} lines)`).join('\n')}
 
 ## Deployment Context
-- Location: ${snapshot.deploymentContext.location || 'Not specified'}
-- Access Method: ${snapshot.deploymentContext.accessMethod || 'Not specified'}
-- Deployment Method: ${snapshot.deploymentContext.deploymentMethod || 'Not specified'}
-- Current Mode: ${snapshot.deploymentContext.currentMode || 'Not specified'}
+- Location: ${escapeField(snapshot.deploymentContext.location) || 'Not specified'}
+- Access Method: ${escapeField(snapshot.deploymentContext.accessMethod) || 'Not specified'}
+- Deployment Method: ${escapeField(snapshot.deploymentContext.deploymentMethod) || 'Not specified'}
+- Current Mode: ${escapeField(snapshot.deploymentContext.currentMode) || 'Not specified'}
 - Production: ${snapshot.deploymentContext.isProduction ? 'Yes' : 'No'}
 
 ## Required Extensions
-${snapshot.vscodeContext.requiredExtensions.join(', ') || 'None'}
+${snapshot.vscodeContext.requiredExtensions.map(escapeField).join(', ') || 'None'}
 
 ## Task
 Provide a comprehensive summary covering:
