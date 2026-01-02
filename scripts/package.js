@@ -4,26 +4,41 @@
  * Undici (used by vsce's cheerio dependency) expects browser File API.
  */
 
-// Polyfill File class for Node.js environments that don't have it
+// Polyfill File class BEFORE loading any modules
 if (typeof globalThis.File === 'undefined') {
   globalThis.File = class File {
     constructor(bits, name, options) {
       this.bits = bits;
       this.name = name;
       this.type = options?.type || '';
+      this.size = 0;
+      this.lastModified = Date.now();
     }
   };
 }
 
-// Now run vsce
-const { spawn } = require('child_process');
-const path = require('path');
+// Also polyfill other web APIs that undici might need
+if (typeof globalThis.FormData === 'undefined') {
+  globalThis.FormData = class FormData {
+    constructor() {
+      this._data = new Map();
+    }
+  };
+}
 
-const vsce = spawn('npx', ['vsce', 'package'], {
-  stdio: 'inherit',
-  cwd: process.cwd()
-});
+// Now require and run vsce in the same process
+async function main() {
+  try {
+    const vsce = require('@vscode/vsce');
+    await vsce.createVSIX({
+      cwd: process.cwd(),
+      useYarn: false
+    });
+    console.log('✓ Package created successfully');
+  } catch (error) {
+    console.error('Packaging failed:', error);
+    process.exit(1);
+  }
+}
 
-vsce.on('close', (code) => {
-  process.exit(code);
-});
+main();
