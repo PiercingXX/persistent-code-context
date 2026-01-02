@@ -106,6 +106,10 @@
           "type": "string",
           "description": "API key for Anthropic Claude (required if using Anthropic provider)."
         },
+        "persistentContext.githubToken": {
+          "type": "string",
+          "description": "GitHub token for GitHub Models API (required if using github-models provider). Can also use GITHUB_TOKEN environment variable."
+        },
         "persistentContext.deploymentLocation": {
           "type": "string",
           "description": "Where is this project deployed? (e.g., 'server.example.com', 'localhost:3000', 'AWS EC2 i-12345')."
