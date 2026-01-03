@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { ContextManager } from './services/contextManager';
 import { StatusBarManager } from './ui/statusBar';
+import { ContinuousLoop, LoopConfig } from './services/continuousLoop';
 
 let contextManager: ContextManager;
 let statusBar: StatusBarManager;
@@ -241,6 +242,30 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  const startContinuousLoop = vscode.commands.registerCommand(
+    'persistent-context.startContinuousLoop',
+    async () => {
+      const prompt = await vscode.window.showInputBox({
+        prompt: 'Enter task prompt for continuous loop',
+        placeHolder: 'e.g., Add unit tests until all code is covered',
+      });
+
+      if (!prompt) return;
+
+      const maxRunsStr = await vscode.window.showInputBox({
+        prompt: 'Max iterations (0 for unlimited)',
+        value: '5',
+      });
+
+      const maxRuns = parseInt(maxRunsStr || '5', 10);
+
+      // TODO: Implement full continuous loop UI
+      vscode.window.showInformationMessage(
+        `🔄 Continuous Loop feature coming soon!\nPrompt: "${prompt}"\nMax iterations: ${maxRuns}`
+      );
+    }
+  );
+
   context.subscriptions.push(
     startSession,
     endSession,
@@ -251,7 +276,8 @@ export function activate(context: vscode.ExtensionContext) {
     viewHistory,
     viewDecisions,
     settingsCmd,
-    teachAgent
+    teachAgent,
+    startContinuousLoop
   );
 }
 

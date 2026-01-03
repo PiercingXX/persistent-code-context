@@ -64,6 +64,10 @@
         "title": "Teach AI Agent / Share Project Knowledge"
       },
       {
+        "command": "persistent-context.startContinuousLoop",
+        "title": "Start Continuous Loop"
+      },
+      {
         "command": "persistent-context.settings",
         "title": "Persistent Context: Settings"
       }
