@@ -10,7 +10,7 @@ export interface AIProvider {
 
 /**
  * AIService attempts to use available LLM providers to summarize context.
- * Tries in order: GitHub Copilot (via VS Code API), Ollama, OpenAI, Anthropic
+ * Tries in order: GitHub Copilot (via VS Code API), Ollama, OpenAI
  * Falls back gracefully if none available.
  */
 export class AIService {
@@ -62,12 +62,6 @@ export class AIService {
         const openaiKey = cfg.get<string>('openaiApiKey');
         if (openaiKey) {
           this.provider = new OpenAIProvider(openaiKey);
-        }
-        break;
-      case 'anthropic':
-        const anthropicKey = cfg.get<string>('anthropicApiKey');
-        if (anthropicKey) {
-          this.provider = new AnthropicProvider(anthropicKey);
         }
         break;
     }
@@ -460,16 +454,3 @@ class OpenAIProvider implements AIProvider {
   }
 }
 
-/**
- * Anthropic provider
- */
-class AnthropicProvider implements AIProvider {
-  name = 'Anthropic Claude';
-
-  constructor(private apiKey: string) {}
-
-  async summarize(snapshot: ContextSnapshot): Promise<string> {
-    // TODO: Implement Anthropic API call
-    throw new Error('Anthropic provider not yet implemented');
-  }
-}

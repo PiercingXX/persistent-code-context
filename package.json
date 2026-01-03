@@ -97,7 +97,7 @@
         },
         "persistentContext.aiProvider": {
           "type": "string",
-          "enum": ["auto", "github-models", "copilot", "ollama", "openai", "anthropic"],
+          "enum": ["auto", "github-models", "copilot", "ollama", "openai"],
           "default": "auto",
           "description": "AI provider to use for context summarization. 'auto' tries in order: Copilot, Ollama."
         },
@@ -109,10 +109,6 @@
         "persistentContext.openaiApiKey": {
           "type": "string",
           "description": "API key for OpenAI (required if using OpenAI provider)."
-        },
-        "persistentContext.anthropicApiKey": {
-          "type": "string",
-          "description": "API key for Anthropic Claude (required if using Anthropic provider)."
         },
         "persistentContext.githubToken": {
           "type": "string",
