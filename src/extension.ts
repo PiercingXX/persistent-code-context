@@ -259,10 +259,40 @@ export function activate(context: vscode.ExtensionContext) {
 
       const maxRuns = parseInt(maxRunsStr || '5', 10);
 
-      // TODO: Implement full continuous loop UI
-      vscode.window.showInformationMessage(
-        `🔄 Continuous Loop feature coming soon!\nPrompt: "${prompt}"\nMax iterations: ${maxRuns}`
-      );
+      if (maxRuns < 1 && maxRuns !== 0) {
+        vscode.window.showErrorMessage('Invalid max iterations value');
+        return;
+      }
+
+      try {
+        // Integrate with ContextManager's services
+        const { ContinuousLoop } = await import('./services/continuousLoop');
+        const { PRManager } = await import('./services/prManager');
+
+        const prManager = new PRManager(contextManager.getWorkspaceRoot());
+        const loop = new ContinuousLoop(
+          contextManager.getWorkspaceRoot(),
+          contextManager.getAIService(),
+          contextManager.getSnapshotCollector(),
+          contextManager.getGitService(),
+          contextManager.getFileService(),
+          prManager,
+          contextManager.getRecentChatContext(),
+          contextManager.getDeploymentContext()
+        );
+
+        vscode.window.showInformationMessage('🔄 Continuous loop starting... Check the output panel');
+
+        await loop.run(prompt, {
+          maxIterations: maxRuns,
+        });
+
+        vscode.window.showInformationMessage('✅ Continuous loop completed!');
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Continuous loop error: ${error instanceof Error ? error.message : String(error)}`
+        );
+      }
     }
   );
 

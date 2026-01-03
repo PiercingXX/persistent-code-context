@@ -12,12 +12,12 @@ import { ChatContextWatcher } from './chatContextWatcher';
 
 export class ContextManager {
   private contextDir: string;
-  private workspaceRoot: string;
+  readonly workspaceRoot: string;
   private currentSession?: Session;
-  private fileService: FileService;
-  private gitService: GitService;
-  private aiService: AIService;
-  private snapshotCollector: ContextSnapshotCollector;
+  readonly fileService: FileService;
+  readonly gitService: GitService;
+  readonly aiService: AIService;
+  readonly snapshotCollector: ContextSnapshotCollector;
   private chatWatcher: ChatContextWatcher;
   private autosaveIntervalMs = 60000;
   private autosaveTimer?: NodeJS.Timeout;
@@ -26,8 +26,8 @@ export class ContextManager {
   private configWatcher?: vscode.Disposable;
   private prevOpenFiles: string = '';
   private prevGitChanges: string = '';
-  private recentChatContext: string[] = [];
-  private deploymentContext: {
+  readonly recentChatContext: string[] = [];
+  readonly deploymentContext: {
     location?: string;
     accessMethod?: string;
     deploymentMethod?: string;
@@ -601,5 +601,40 @@ This is the persistent context for the project. Use this to understand what we'r
     }
 
     return briefing;
+  }
+
+  // Public getters for external services (needed by ContinuousLoop)
+  public getWorkspaceRoot(): string {
+    return this.workspaceRoot;
+  }
+
+  public getFileService(): FileService {
+    return this.fileService;
+  }
+
+  public getGitService(): GitService {
+    return this.gitService;
+  }
+
+  public getAIService(): AIService {
+    return this.aiService;
+  }
+
+  public getSnapshotCollector(): ContextSnapshotCollector {
+    return this.snapshotCollector;
+  }
+
+  public getRecentChatContext(): string[] {
+    return this.recentChatContext;
+  }
+
+  public getDeploymentContext(): {
+    location?: string;
+    accessMethod?: string;
+    deploymentMethod?: string;
+    isProduction?: boolean;
+    currentWorkMode?: string;
+  } {
+    return this.deploymentContext;
   }
 }
